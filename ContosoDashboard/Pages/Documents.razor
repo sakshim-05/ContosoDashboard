@@ -1,0 +1,241 @@
+@page "/documents"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Forms
+@inject IDocumentService DocumentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IProjectService ProjectService
+@attribute [Authorize]
+
+<PageTitle>Documents - ContosoDashboard</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1>Documents</h1>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="alert @(isError ? "alert-danger" : "alert-success")">@statusMessage</div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-5">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Upload Document</h3>
+
+                    <EditForm Model="uploadRequest" OnValidSubmit="HandleUploadAsync">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <InputText class="form-control" @bind-Value="uploadRequest.Title" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <InputTextArea class="form-control" @bind-Value="uploadRequest.Description" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <InputSelect class="form-select" @bind-Value="uploadRequest.Category">
+                                @foreach (var category in Enum.GetValues<DocumentCategory>())
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Project</label>
+                            <InputSelect class="form-select" @bind-Value="uploadRequest.ProjectId">
+                                <option value="">No project</option>
+                                @foreach (var project in userProjects)
+                                {
+                                    <option value="@project.ProjectId">@project.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            <InputText class="form-control" @bind-Value="uploadRequest.Tags" placeholder="comma separated" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">File</label>
+                            <InputFile OnChange="HandleFileSelection" class="form-control" />
+                        </div>
+
+                        <button class="btn btn-primary" type="submit" disabled="@(!canUpload)">
+                            Upload Document
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3>My Documents</h3>
+                    @if (documents == null)
+                    {
+                        <p><em>Loading...</em></p>
+                    }
+                    else if (!documents.Any())
+                    {
+                        <p class="text-muted">No documents uploaded yet.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Project</th>
+                                        <th>Size</th>
+                                        <th>Uploaded</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var document in documents)
+                                    {
+                                        <tr>
+                                            <td>@document.Title</td>
+                                            <td>@document.Category</td>
+                                            <td>@(document.Project?.Name ?? "Personal")</td>
+                                            <td>@FormatFileSize(document.FileSizeBytes)</td>
+                                            <td>@document.UploadedAt.ToString("MMM dd, yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly DocumentUploadRequest uploadRequest = new();
+    private List<Document> documents = new();
+    private List<Project> userProjects = new();
+    private int currentUserId;
+    private IBrowserFile? selectedFile;
+    private string statusMessage = string.Empty;
+    private bool isError;
+    private bool canUpload => selectedFile is not null && !string.IsNullOrWhiteSpace(uploadRequest.Title);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+        {
+            currentUserId = userId;
+        }
+
+        userProjects = await ProjectService.GetUserProjectsAsync(currentUserId);
+        documents = await DocumentService.GetUserDocumentsAsync(currentUserId);
+    }
+
+    private async Task HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        if (selectedFile == null)
+        {
+            return;
+        }
+
+        if (selectedFile.Size > 25 * 1024 * 1024)
+        {
+            statusMessage = "The selected file exceeds the 25 MB limit.";
+            isError = true;
+            selectedFile = null;
+            return;
+        }
+
+        if (!await DocumentService.CanUserAccessDocumentAsync(0, currentUserId))
+        {
+            // no-op placeholder for service validation; file is checked during upload
+        }
+
+        statusMessage = $"Selected file: {selectedFile.Name}";
+        isError = false;
+    }
+
+    private async Task HandleUploadAsync()
+    {
+        if (selectedFile == null)
+        {
+            statusMessage = "Please choose a file before uploading.";
+            isError = true;
+            return;
+        }
+
+        if (currentUserId <= 0)
+        {
+            statusMessage = "User session is not available.";
+            isError = true;
+            return;
+        }
+
+        try
+        {
+            await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 25 * 1024 * 1024);
+            var result = await DocumentService.UploadDocumentAsync(
+                uploadRequest,
+                stream,
+                selectedFile.Name,
+                selectedFile.ContentType,
+                currentUserId);
+
+            if (!result.Success)
+            {
+                statusMessage = result.ErrorMessage ?? "Upload failed.";
+                isError = true;
+                return;
+            }
+
+            documents = await DocumentService.GetUserDocumentsAsync(currentUserId);
+            uploadRequest.Title = string.Empty;
+            uploadRequest.Description = string.Empty;
+            uploadRequest.Category = DocumentCategory.Other;
+            uploadRequest.ProjectId = null;
+            uploadRequest.Tags = string.Empty;
+            selectedFile = null;
+            statusMessage = "Document uploaded successfully.";
+            isError = false;
+        }
+        catch (Exception ex)
+        {
+            statusMessage = ex.Message;
+            isError = true;
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        var units = new[] { "B", "KB", "MB", "GB" };
+        double size = bytes;
+        var index = 0;
+
+        while (size >= 1024 && index < units.Length - 1)
+        {
+            size /= 1024;
+            index++;
+        }
+
+        return $"{size:0.##} {units[index]}";
+    }
+}
