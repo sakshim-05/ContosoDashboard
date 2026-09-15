@@ -19,7 +19,7 @@ As an employee, I want to upload files with metadata and organize them by projec
 
 1. **Given** a logged-in employee with permission to upload documents, **When** they choose a supported file and complete the upload form, **Then** the file is saved securely, metadata is stored, and the document appears in the user's document list.
 2. **Given** a user uploads a file with invalid metadata or an unsupported file type, **When** the submission is processed, **Then** the system blocks the upload and shows a clear error message.
-3. **Given** a user uploads a file to a project, **When** they view that project, **Then** the document is visible to authorized project members and not to unauthorized users.
+3. **Given** a user uploads a file to a project, **When** they view that project, **Then** the document is visible to all authorized project team members by default and not to unauthorized users.
 
 ---
 
@@ -74,13 +74,13 @@ As a document owner or project manager, I want to update metadata, replace files
 - **FR-005**: The system MUST store uploaded files in a secure local storage location outside the web root and generate a unique file path before database persistence.
 - **FR-006**: The system MUST support a document category list of Project Documents, Team Resources, Personal Files, Reports, Presentations, and Other.
 - **FR-007**: The system MUST allow users to view a list of their uploaded documents and sort or filter those documents by common attributes.
-- **FR-008**: The system MUST show project-related documents on the relevant project views and restrict visibility to authorized users.
+- **FR-008**: The system MUST show project-related documents on the relevant project views and make them visible to all authorized project team members by default, while still supporting additional sharing beyond the project team.
 - **FR-009**: The system MUST support document search by title, description, tags, uploader name, and associated project name.
 - **FR-010**: The system MUST restrict search results and downloads to documents the user is authorized to access.
 - **FR-011**: The system MUST allow authorized users to download documents and preview common file types such as PDF and images in the browser when supported.
 - **FR-012**: The system MUST allow document owners to update metadata and replace a document with a newer version.
 - **FR-013**: The system MUST allow authorized users to delete documents they own or manage and confirm deletion before final removal.
-- **FR-014**: The system MUST support sharing a document with specific users or teams and notify recipients through the in-app notification system.
+- **FR-014**: The system MUST support sharing a document with specific users or teams beyond the project team and notify recipients through the in-app notification system.
 - **FR-015**: The system MUST surface shared documents in a dedicated shared-with-me area for recipients.
 - **FR-016**: The system MUST support attaching documents to tasks and showing those documents in the task context for the related project.
 - **FR-017**: The system MUST add a recent documents widget and document counts to the dashboard summary experience.
