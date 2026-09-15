@@ -7,9 +7,9 @@
 
 **Purpose**: Establish secure local storage and the foundation required for document metadata work.
 
-- [ ] T001 Configure the application storage root and document upload settings in ContosoDashboard/appsettings.json
-- [ ] T002 Create the storage contract for local file handling in ContosoDashboard/Services/IFileStorageService.cs
-- [ ] T003 [P] Implement the local file storage service in ContosoDashboard/Services/LocalFileStorageService.cs
+- [x] T001 Configure the application storage root and document upload settings in ContosoDashboard/appsettings.json
+- [x] T002 Create the storage contract for local file handling in ContosoDashboard/Services/IFileStorageService.cs
+- [x] T003 [P] Implement the local file storage service in ContosoDashboard/Services/LocalFileStorageService.cs
 
 ---
 
@@ -17,11 +17,11 @@
 
 **Purpose**: Add the shared document data model, service layer, and authorization primitives before story work begins.
 
-- [ ] T004 Add the `Document` and `DocumentShare` entities and EF Core configuration in ContosoDashboard/Models/Document.cs and ContosoDashboard/Data/ApplicationDbContext.cs
-- [ ] T005 [P] Add database indexes and validation rules for document metadata in ContosoDashboard/Data/ApplicationDbContext.cs
-- [ ] T006 Implement document CRUD and authorization gate logic in ContosoDashboard/Services/DocumentService.cs
-- [ ] T007 [P] Extend project visibility checks for project-scoped document access in ContosoDashboard/Services/ProjectService.cs
-- [ ] T008 Add document-related notifications and audit hooks in ContosoDashboard/Services/NotificationService.cs
+- [x] T004 Add the `Document` and `DocumentShare` entities and EF Core configuration in ContosoDashboard/Models/Document.cs and ContosoDashboard/Data/ApplicationDbContext.cs
+- [x] T005 [P] Add database indexes and validation rules for document metadata in ContosoDashboard/Data/ApplicationDbContext.cs
+- [x] T006 Implement document CRUD and authorization gate logic in ContosoDashboard/Services/DocumentService.cs
+- [x] T007 [P] Extend project visibility checks for project-scoped document access in ContosoDashboard/Services/ProjectService.cs
+- [x] T008 Add document-related notifications and audit hooks in ContosoDashboard/Services/NotificationService.cs
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -35,11 +35,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Create the document upload model and validation rules in ContosoDashboard/Models/Document.cs
-- [ ] T010 [US1] Implement upload validation, file-size enforcement, extension checks, and secure path generation in ContosoDashboard/Services/DocumentService.cs
-- [ ] T011 [P] [US1] Add the document upload and list page in ContosoDashboard/Pages/Documents.razor
-- [ ] T012 [US1] Register the document feature in the app startup flow and service container in ContosoDashboard/Program.cs
-- [ ] T013 [P] [US1] Add the recent documents summary widget to the dashboard in ContosoDashboard/Pages/Index.razor and ContosoDashboard/Services/DashboardService.cs
+- [x] T009 [P] [US1] Create the document upload model and validation rules in ContosoDashboard/Models/Document.cs
+- [x] T010 [US1] Implement upload validation, file-size enforcement, extension checks, and secure path generation in ContosoDashboard/Services/DocumentService.cs
+- [x] T011 [P] [US1] Add the document upload and list page in ContosoDashboard/Pages/Documents.razor
+- [x] T012 [US1] Register the document feature in the app startup flow and service container in ContosoDashboard/Program.cs
+- [x] T013 [P] [US1] Add the recent documents summary widget to the dashboard in ContosoDashboard/Pages/Index.razor and ContosoDashboard/Services/DashboardService.cs
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
